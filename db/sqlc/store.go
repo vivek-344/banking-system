@@ -24,7 +24,9 @@ func NewStore(db *pgxpool.Pool) *Store {
 
 // execTx executes a function within a database transaction
 func (store *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
-	tx, err := store.db.BeginTx(ctx, pgx.TxOptions{})
+	tx, err := store.db.BeginTx(ctx, pgx.TxOptions{
+		IsoLevel: pgx.ReadCommitted,
+	})
 	if err != nil {
 		return err
 	}
