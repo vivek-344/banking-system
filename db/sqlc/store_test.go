@@ -137,6 +137,11 @@ func TestTransferTxDeadLock(t *testing.T) {
 		}()
 	}
 
+	for i := 0; i < n; i++ {
+		err := <-errs
+		require.NoError(t, err)
+	}
+
 	// check the final updated balances
 	updatedAccount1, err := testQueries.GetAccount(context.Background(), account1.ID)
 	require.NoError(t, err)
