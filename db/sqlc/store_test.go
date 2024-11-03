@@ -119,17 +119,26 @@ func TestTransferTxDeadLock(t *testing.T) {
 	account2 := createRandomAccount(t)
 	fmt.Println(">> before:", account1.Balance, account2.Balance)
 
-	//run a consurrent transfer transactions
-	n := 5
+	//run concurrent transfer transactions
+	n := 10
 	amount := int64(10)
-
 	errs := make(chan error)
 
+	// Run n concurrent transfer transactions
 	for i := 0; i < n; i++ {
+		fromAccountID := account1.ID
+		toAccountID := account2.ID
+
+		if i%2 == 1 {
+			// Swap the accounts for half of the transactions
+			fromAccountID = account2.ID
+			toAccountID = account1.ID
+		}
+
 		go func() {
 			_, err := store.TransferTx(context.Background(), TransferTxParams{
-				FromAccountID: account1.ID,
-				ToAccountID:   account2.ID,
+				FromAccountID: fromAccountID,
+				ToAccountID:   toAccountID,
 				Amount:        amount,
 			})
 
@@ -137,6 +146,7 @@ func TestTransferTxDeadLock(t *testing.T) {
 		}()
 	}
 
+	// Check results
 	for i := 0; i < n; i++ {
 		err := <-errs
 		require.NoError(t, err)
@@ -150,6 +160,7 @@ func TestTransferTxDeadLock(t *testing.T) {
 	require.NoError(t, err)
 
 	fmt.Println(">> after:", updatedAccount1.Balance, updatedAccount2.Balance)
+	// Since we transfer money back and forth, the final balance should be equal to initial balance
 	require.Equal(t, account1.Balance, updatedAccount1.Balance)
 	require.Equal(t, account2.Balance, updatedAccount2.Balance)
 }
