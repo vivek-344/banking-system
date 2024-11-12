@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"context"
@@ -7,11 +7,12 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/stretchr/testify/require"
+	db "github.com/vivek-344/banking-system/db/sqlc"
 	"github.com/vivek-344/banking-system/util"
 )
 
-func createRandomAccount(t *testing.T) Account {
-	arg := CreateAccountParams{
+func createRandomAccount(t *testing.T) db.Account {
+	arg := db.CreateAccountParams{
 		Owner:    util.RandomOwner(),
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
@@ -53,21 +54,21 @@ func TestGetAccount(t *testing.T) {
 func TestUpdateAccount(t *testing.T) {
 	account := createRandomAccount(t)
 
-	args := UpdateAccountParams{
+	args := db.UpdateAccountParams{
 		ID:      account.ID,
 		Balance: util.RandomMoney(),
 	}
 
-	updated_account, err := testQueries.UpdateAccount(context.Background(), args)
+	updatedAccount, err := testQueries.UpdateAccount(context.Background(), args)
 
 	require.NoError(t, err)
-	require.NotEmpty(t, updated_account)
+	require.NotEmpty(t, updatedAccount)
 
-	require.Equal(t, account.ID, updated_account.ID)
-	require.Equal(t, account.Owner, updated_account.Owner)
-	require.Equal(t, args.Balance, updated_account.Balance)
-	require.Equal(t, account.Currency, updated_account.Currency)
-	require.WithinDuration(t, account.CreatedAt, updated_account.CreatedAt, time.Second)
+	require.Equal(t, account.ID, updatedAccount.ID)
+	require.Equal(t, account.Owner, updatedAccount.Owner)
+	require.Equal(t, args.Balance, updatedAccount.Balance)
+	require.Equal(t, account.Currency, updatedAccount.Currency)
+	require.WithinDuration(t, account.CreatedAt, updatedAccount.CreatedAt, time.Second)
 }
 
 func TestDeleteAccount(t *testing.T) {
@@ -82,11 +83,11 @@ func TestDeleteAccount(t *testing.T) {
 }
 
 func TestListAccounts(t *testing.T) {
-	for i := 0; i < 10; i++ {
+	for range [10]int{} {
 		createRandomAccount(t)
 	}
 
-	arg := ListAccountsParams{
+	arg := db.ListAccountsParams{
 		Limit:  5,
 		Offset: 5,
 	}

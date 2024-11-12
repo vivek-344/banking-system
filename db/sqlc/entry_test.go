@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"context"
@@ -6,11 +6,12 @@ import (
 	"time"
 
 	"github.com/stretchr/testify/require"
+	db "github.com/vivek-344/banking-system/db/sqlc"
 	"github.com/vivek-344/banking-system/util"
 )
 
-func createRandomEntry(t *testing.T, account Account) Entry {
-	arg := CreateEntryParams{
+func createRandomEntry(t *testing.T, account db.Account) db.Entry {
+	arg := db.CreateEntryParams{
 		AccountID: account.ID,
 		Amount:    util.RandomMoney(),
 	}
@@ -52,11 +53,11 @@ func TestGetEntry(t *testing.T) {
 func TestListEntries(t *testing.T) {
 	account := createRandomAccount(t)
 
-	for i := 0; i < 10; i++ {
+	for range [10]int{} {
 		createRandomEntry(t, account)
 	}
 
-	arg := ListEntriesParams{
+	arg := db.ListEntriesParams{
 		AccountID: account.ID,
 		Limit:     5,
 		Offset:    5,

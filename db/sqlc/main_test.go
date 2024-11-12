@@ -1,4 +1,4 @@
-package db
+package db_test
 
 import (
 	"context"
@@ -7,13 +7,14 @@ import (
 	"testing"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	db "github.com/vivek-344/banking-system/db/sqlc"
 )
 
 const (
 	dbSource = "postgresql://root:vivek@localhost:5432/banking_system?sslmode=disable"
 )
 
-var testQueries *Queries
+var testQueries *db.Queries
 var testDB *pgxpool.Pool
 
 func TestMain(m *testing.M) {
@@ -23,7 +24,7 @@ func TestMain(m *testing.M) {
 		log.Fatal("cannot connect to the database", err)
 	}
 
-	testQueries = New(testDB)
+	testQueries = db.New(testDB)
 
 	os.Exit(m.Run())
 }

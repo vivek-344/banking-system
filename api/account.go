@@ -10,14 +10,15 @@ import (
 )
 
 type createAccountRequest struct {
-	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Owner    string `binding:"required" json:"owner"`
+	Currency string `binding:"required,oneof=USD EUR" json:"currency" `
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
 	var req createAccountRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+
 		return
 	}
 
@@ -35,7 +36,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 }
 
 type getAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID int64 `binding:"required,min=1" uri:"id"`
 }
 
 func (server *Server) getAccount(ctx *gin.Context) {
@@ -47,7 +48,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 	account, err := server.store.GetAccount(ctx, req.ID)
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -59,8 +60,8 @@ func (server *Server) getAccount(ctx *gin.Context) {
 }
 
 type listAccountsRequest struct {
-	PageID   int32 `form:"page_id" binding:"required,min=1"`
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"`
+	PageID   int32 `binding:"required,min=1" form:"page_id"`
+	PageSize int32 `binding:"required,min=5,max=10" form:"page_size"`
 }
 
 type listAccountsResponse struct {
@@ -91,11 +92,11 @@ func (server *Server) listAccounts(ctx *gin.Context) {
 }
 
 type updateAccountURI struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID int64 `binding:"required,min=1" uri:"id"`
 }
 
 type updateAccountParams struct {
-	Balance *int64 `json:"balance" binding:"min=0"`
+	Balance *int64 `binding:"min=0" json:"balance"`
 }
 
 func (server *Server) updateAccount(ctx *gin.Context) {
@@ -125,7 +126,7 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 		Balance: *reqBody.Balance,
 	})
 	if err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
@@ -137,7 +138,7 @@ func (server *Server) updateAccount(ctx *gin.Context) {
 }
 
 type deleteAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID int64 `binding:"required,min=1" uri:"id"`
 }
 
 func (server *Server) deleteAccount(ctx *gin.Context) {
@@ -148,7 +149,7 @@ func (server *Server) deleteAccount(ctx *gin.Context) {
 	}
 
 	if err := server.store.DeleteAccount(ctx, req.ID); err != nil {
-		if err == pgx.ErrNoRows {
+		if errors.Is(err, pgx.ErrNoRows) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
