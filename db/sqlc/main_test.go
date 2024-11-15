@@ -8,18 +8,19 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	db "github.com/vivek-344/banking-system/db/sqlc"
-)
-
-const (
-	dbSource = "postgresql://root:vivek@localhost:5432/banking_system?sslmode=disable"
+	"github.com/vivek-344/banking-system/util"
 )
 
 var testQueries *db.Queries
 var testDB *pgxpool.Pool
 
 func TestMain(m *testing.M) {
-	var err error
-	testDB, err = pgxpool.New(context.Background(), dbSource)
+	config, err := util.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("cannot load config: ", err)
+	}
+
+	testDB, err = pgxpool.New(context.Background(), config.DBSource)
 	if err != nil {
 		log.Fatal("cannot connect to the database", err)
 	}
